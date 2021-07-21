@@ -20,7 +20,12 @@ jobs:
     steps:   
     
     - uses: actions/checkout@v2
-    
+    - name: Setup .NET Core SDK ${{ env.VERSION }}
+      uses: actions/setup-dotnet@v1.7.2
+      continue-on-error: ${{ env.CONTINUE_ON_ERROR_SETUP }}
+      with:
+        dotnet-version: ${{ env.VERSION }}
+        
     - name: dotnet cover  
       uses: dodopizza/dotcover-action@v1
       with:
@@ -37,12 +42,12 @@ jobs:
     - name: Setup sonarqube
       uses: warchant/setup-sonar-scanner@v3
 
+    - run: dotnet build
     - name: Run sonarqube
       env:
         # to get access to secrets.SONAR_TOKEN, provide GITHUB_TOKEN
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: dotnet build
-           sonar-scanner
+      run: sonar-scanner
           -Dsonar.login=${{ secrets.SONAR_TOKEN }}
           -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }}
           -Dsonar.projectKey=.NetProject
