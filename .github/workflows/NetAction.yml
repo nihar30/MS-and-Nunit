@@ -108,7 +108,7 @@ jobs:
         
     - name: Install SonarQube scanner
       if: steps.cache-sonar-scanner.outputs.cache-hit != 'true'
-      shell: powershell
+      shell: pwsh
       run: |
         New-Item -Path .\.sonar\scanner -ItemType Directory
         dotnet tool update dotnet-sonarscanner --tool-path .\.sonar\scanner
@@ -116,35 +116,35 @@ jobs:
     - name: Start analyze
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
-      shell: powershell
+      shell: pwsh
       run: |
         .\.sonar\scanner\dotnet-sonarscanner begin /k:".NetProject" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="${{ secrets.SONAR_HOST_URL }}" /d:sonar.cs.dotcover.reportsPaths="./CodeCoverageReport.xml"
         dotnet build      
 
     - name: dotnet cover  
-        uses: dodopizza/dotcover-action@v1
-        with:
+      uses: dodopizza/dotcover-action@v1
+      with:
          #dotCoverCommand: help cover coverage.xml
-         dotCoverCommand: dotnet --output=./CodeCoverageReport.xml --reportType=XML -- test "./unit-testing-using-nunit.csproj"
+        dotCoverCommand: dotnet --output=./CodeCoverageReport.xml --reportType=XML -- test "./unit-testing-using-nunit.csproj"
 
-      - name: 'Publish code coverage results'
-        uses: actions/upload-artifact@v2.2.3
-        with:
+    - name: 'Publish code coverage results'
+      uses: actions/upload-artifact@v2.2.3
+      with:
           name: CoverageReport
           path: ./CodeCoverageReport.xml 
 
 
-      - name: End Analyze
-        env:
+    - name: End Analyze
+      env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
-        shell: powershell
-        run: |
+      shell: pwsh
+      run: |
           .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
-      - name: SonarQube Quality Gate check
-        uses: sonarsource/sonarqube-quality-gate-action@master
+    - name: SonarQube Quality Gate check
+      uses: sonarsource/sonarqube-quality-gate-action@master
         # Force to fail step after specific time
-        timeout-minutes: 5
-        env:
+      timeout-minutes: 5
+      env:
          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        with:
+      with:
           scanMetadataReportFile: .sonarqube/out/.sonar/report-task.txt  
