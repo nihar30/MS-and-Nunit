@@ -36,48 +36,6 @@ jobs:
 
     - name: Setup sonarqube
       uses: warchant/setup-sonar-scanner@v3
-    - name: Run sonarqube
-      env:
-        # to get access to secrets.SONAR_TOKEN, provide GITHUB_TOKEN
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: name: NETPipeline
-
-
-env:
-  VERSION: '3.1'
-  SOLUTION_FILE_PATH: .
-  #BUILD_CONFIGURATION: Release
-  CONTINUE_ON_ERROR_SETUP: true
-  CONTINUE_ON_ERROR: false
-
-on:
-  push:
-    branches: [ master ]
-
-jobs:
-  
-  Sonar-Analysis:
-    name: Sonar Analysis
-    runs-on: ubuntu-latest
-    steps:   
-    
-    - uses: actions/checkout@v2
-    
-    - name: dotnet cover  
-      uses: dodopizza/dotcover-action@v1
-      with:
-         #dotCoverCommand: help cover coverage.xml
-        dotCoverCommand: dotnet --output=./CodeCoverageReport.xml --reportType=XML -- test "./unit-testing-using-nunit.csproj"
-
-    - name: 'Publish code coverage results'
-      uses: actions/upload-artifact@v2.2.3
-      with:
-          name: CoverageReport
-          path: ./CodeCoverageReport.xml 
-
-
-    - name: Setup sonarqube
-      uses: warchant/setup-sonar-scanner@v3
 
     - name: Run sonarqube
       env:
@@ -85,12 +43,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: dotnet build
            sonar-scanner
-          -Dsonar.login=${{ secrets.SONAR_TOKEN }}
-          -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }}
-          -Dsonar.projectKey=.NetProject
-          -Dsonar.cs.dotcover.reportsPaths='"./CodeCoverageReport.xml"'
-
-          sonar-scanner
           -Dsonar.login=${{ secrets.SONAR_TOKEN }}
           -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }}
           -Dsonar.projectKey=.NetProject
