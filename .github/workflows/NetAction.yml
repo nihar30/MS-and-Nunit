@@ -1,6 +1,5 @@
 name: NETPipeline
 
-
 env:
   VERSION: '3.1'
   SOLUTION_FILE_PATH: .
@@ -68,7 +67,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
       shell: powershell
       run: |
-        .\.sonar\scanner\dotnet-sonarscanner begin /k:".NetProject" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="${{ secrets.SONAR_HOST_URL }}"
+        .\.sonar\scanner\dotnet-sonarscanner begin /k:".NetProject" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="${{ secrets.SONAR_HOST_URL }}" /d:sonar.cs.dotcover.reportsPaths="./CodeCoverageReport.xml"
             
 
     - name: MS Build
@@ -112,6 +111,18 @@ jobs:
         name: artifact 
         path: D:\a\MS-and-Nunit\MS-and-Nunit\PrimeService.Tests\TestResults\testresult.xml
     
+    - name: dotnet cover  
+      uses: dodopizza/dotcover-action@v1
+      with:
+        #dotCoverCommand: help cover coverage.xml
+        dotCoverCommand: dotnet --output=./CodeCoverageReport.xml --reportType=XML -- test "./unit-testing-using-nunit.csproj"
+
+    - name: 'Publish code coverage results'
+      uses: actions/upload-artifact@v2.2.3
+      with:
+        name: CoverageReport
+        path: ./CodeCoverageReport.xml 
+
     - name: End Analyze
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
