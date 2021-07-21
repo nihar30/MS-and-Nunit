@@ -128,20 +128,20 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
       shell: pwsh
       run: |
-        ./.sonar/scanner/dotnet-sonarscanner begin /k:".NetProject" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="${{ secrets.SONAR_HOST_URL }}" /d:sonar.coverage.jacoco.xmlReportPaths="./CodeCoverageReport.html" /d:sonar.cs.dotcover.reportsPaths="./CodeCoverageReport.html"
+        ./.sonar/scanner/dotnet-sonarscanner begin /k:".NetProject" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="${{ secrets.SONAR_HOST_URL }}" /d:sonar.coverage.jacoco.xmlReportPaths="./CodeCoverageReport.xml" /d:sonar.cs.dotcover.reportsPaths="./CodeCoverageReport.xml"
         dotnet build      
 
     - name: dotnet cover  
       uses: dodopizza/dotcover-action@v1
       with:
          #dotCoverCommand: help cover coverage.xml
-        dotCoverCommand: dotnet --output=./CodeCoverageReport.html --reportType=HTML -- test "./unit-testing-using-nunit.csproj"
+        dotCoverCommand: dotnet --output=./CodeCoverageReport.xml --reportType=XML -- test "./unit-testing-using-nunit.csproj"
 
     - name: 'Publish code coverage results'
       uses: actions/upload-artifact@v2.2.3
       with:
           name: CoverageReport
-          path: ./CodeCoverageReport.html 
+          path: ./CodeCoverageReport.xml 
 
 
     - name: End Analyze
