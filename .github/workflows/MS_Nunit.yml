@@ -25,13 +25,13 @@ jobs:
       uses: dodopizza/dotcover-action@v1
       with:
          #dotCoverCommand: help cover coverage.xml
-        dotCoverCommand: dotnet --output=./CodeCoverageReport.xml --reportType=XML -- test "./unit-testing-using-nunit.csproj"
+        dotCoverCommand: dotnet --output=./CodeCoverageReport.html --reportType=HTML -- test "./unit-testing-using-nunit.csproj"
 
     - name: 'Publish code coverage results'
       uses: actions/upload-artifact@v2.2.3
       with:
           name: CoverageReport
-          path: ./CodeCoverageReport.xml 
+          path: ./CodeCoverageReport.html 
 
 
     - name: Setup sonarqube
@@ -44,4 +44,4 @@ jobs:
           -Dsonar.login=${{ secrets.SONAR_TOKEN }}
           -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }}
           -Dsonar.projectKey=.NetProject
-          -Dsonar.cs.dotcover.reportsPaths='"./CodeCoverageReport.xml"'
+          -Dsonar.cs.dotcover.reportsPaths='"./CodeCoverageReport.html"'
