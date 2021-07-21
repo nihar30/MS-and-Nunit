@@ -34,19 +34,14 @@ jobs:
           path: ./CodeCoverageReport.xml 
 
 
-    - name: Sonarscanner for dotnet
-      uses: Secbyte/dotnet-sonarscanner@v2.3
-      with:
-        buildCommand: dotnet build .
-        testCommand: dotnet test .
-        projectKey: .NetProject
-        projectName: .NetProject
-        beginArguments: >
-            /d:sonar.verbose="true"
-            /d:sonar.host.url="http://13.59.238.74:9000"
-            /d:sonar.cs.dotcover.reportsPaths='"./CodeCoverageReport.xml"'
-            /d:sonar.coverage.exclusions='"**/*.cs","**/*.md"'
+    - name: Setup sonarqube
+      uses: warchant/setup-sonar-scanner@v3
+    - name: Run sonarqube
       env:
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        # to get access to secrets.SONAR_TOKEN, provide GITHUB_TOKEN
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
+      run: sonar-scanner
+          -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+          -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }}
+          -Dsonar.projectKey=.NetProject
+          -Dsonar.cs.dotcover.reportsPaths='"./CodeCoverageReport.xml"'
