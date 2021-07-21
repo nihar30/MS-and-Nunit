@@ -125,8 +125,8 @@ jobs:
       with:
         # Artifact name
         name: artifact 
-        path: D:\a\MS-and-Nunit\MS-and-Nunit\PrimeService.Tests\TestResults\testresult.xml  
-
+        path: /home/runner/work/MS-and-Nunit/MS-and-Nunit/PrimeService.Tests/TestResults/testresult.xml
+        
     - name: dotnet cover  
       uses: dodopizza/dotcover-action@v1
       with:
@@ -146,6 +146,7 @@ jobs:
       shell: pwsh
       run: |
           ./.sonar/scanner/dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
+    
     - name: SonarQube Quality Gate check
       uses: sonarsource/sonarqube-quality-gate-action@master
         # Force to fail step after specific time
