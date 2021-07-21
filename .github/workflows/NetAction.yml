@@ -110,19 +110,34 @@ jobs:
         # Artifact name
         name: artifact 
         path: D:\a\MS-and-Nunit\MS-and-Nunit\PrimeService.Tests\TestResults\testresult.xml
-    
-    - name: dotnet cover  
-      uses: dodopizza/dotcover-action@v1
-      with:
-        #dotCoverCommand: help cover coverage.xml
-        dotCoverCommand: dotnet --output=./CodeCoverageReport.xml --reportType=XML -- test "./unit-testing-using-nunit.csproj"
+ 
+ Code-Quality-Check:
+    needs: build
+    name: Dotcover 
+    runs-on: ubuntu-latest
+    steps: 
+      - uses: actions/checkout@v2
+      
+      - name: dotnet cover  
+        uses: dodopizza/dotcover-action@v1
+        with:
+         #dotCoverCommand: help cover coverage.xml
+         dotCoverCommand: dotnet --output=./CodeCoverageReport.xml --reportType=XML -- test "./unit-testing-using-nunit.csproj"
 
-    - name: 'Publish code coverage results'
-      uses: actions/upload-artifact@v2.2.3
-      with:
-        name: CoverageReport
-        path: ./CodeCoverageReport.xml 
+      - name: 'Publish code coverage results'
+        uses: actions/upload-artifact@v2.2.3
+        with:
+          name: CoverageReport
+          path: ./CodeCoverageReport.xml      
 
+
+Sonar-End-Analysis:
+  needs: Dotcover
+  name: Sonar Analysis
+  runs-on: windows-latest
+   
+  steps:
+    - uses: actions/checkout@v2     
     - name: End Analyze
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
@@ -137,4 +152,4 @@ jobs:
       env:
        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       with:
-        scanMetadataReportFile: .sonarqube/out/.sonar/report-task.txt
+        scanMetadataReportFile: .sonarqube/out/.sonar/report-task.txt  
