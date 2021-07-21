@@ -96,7 +96,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
       shell: pwsh
       run: |
-        ./.sonar/scanner/dotnet-sonarscanner begin /k:".NetProject" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="${{ secrets.SONAR_HOST_URL }}" /d:sonar.cs.dotcover.reportsPaths="./CodeCoverageReport.html" /d:sonar.cs.nunit.reportsPaths="/home/runner/work/MS-and-Nunit/MS-and-Nunit/PrimeService.Tests/TestResults/testresult.xml"
+        ./.sonar/scanner/dotnet-sonarscanner begin /k:".NetProject" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="${{ secrets.SONAR_HOST_URL }}" /d:sonar.cs.nunit.reportsPaths="/home/runner/work/MS-and-Nunit/MS-and-Nunit/PrimeService.Tests/TestResults/testresult.xml" /d:sonar.cs.dotcover.reportsPaths="./CodeCoverageReport.html" 
         dotnet build
         
 
