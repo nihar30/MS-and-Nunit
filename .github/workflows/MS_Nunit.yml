@@ -1,4 +1,5 @@
-name: .NET
+name: NETPipeline
+
 
 env:
   VERSION: '3.1'
@@ -10,96 +11,44 @@ env:
 on:
   push:
     branches: [ master ]
-  pull_request:
-    branches: [ master ]
 
 jobs:
-  build:
-
-    runs-on: windows-latest
-    name: MS Build
-
-    steps:
-    - uses: actions/checkout@v2
+  
+  Sonar-Analysis:
+    name: Sonar Analysis
+    runs-on: ubuntu-latest
+    steps:   
     - name: Setup .NET Core SDK ${{ env.VERSION }}
       uses: actions/setup-dotnet@v1.7.2
       continue-on-error: ${{ env.CONTINUE_ON_ERROR_SETUP }}
       with:
         dotnet-version: ${{ env.VERSION }}
-        
-    - name: Setup MSBuild
-      uses: microsoft/setup-msbuild@v1
-      continue-on-error: ${{ env.CONTINUE_ON_ERROR_SETUP }}
-      
-    - name: Restore NuGet packages
-      working-directory: ${{env.GITHUB_WORKSPACE}}
-      run: nuget restore ${{env.SOLUTION_FILE_PATH}}
-      
-    - name: MS Build
-      working-directory: ${{env.GITHUB_WORKSPACE}}
-      # run: msbuild /m /p:Configuration=${{env.BUILD_CONFIGURATION}} ${{env.SOLUTION_FILE_PATH}}
-      run: msbuild /m /t:Rebuild ${{env.SOLUTION_FILE_PATH}}
-      continue-on-error: ${{ env.CONTINUE_ON_ERROR }}
-    
-    - name: Upload a Build Artifact
-      uses: actions/upload-artifact@v2.2.4
-      with:
-          # Artifact name
-        name: artifact 
-        path: $GITHUB_WORKSPACE
-      
-  tests:
-    needs: build
-    name: NUnit Testing
-    runs-on: windows-latest
-    steps: 
-      - uses: actions/checkout@v2
-      - name: NUnit
-        run: dotnet new nunit
-      
-      - name: add package Microsoft.NET.Test.Sdk
-        run: dotnet add unit-testing-using-nunit.csproj package Microsoft.NET.Test.Sdk --version 16.10.0 
-      
-      - name: add package Nunit3TestAdapter
-        run: dotnet add unit-testing-using-nunit.csproj package Nunit3TestAdapter
-        
-      #- name: add package Nunit3Console runner
-       # run: dotnet add unit-testing-using-nunit.csproj package NUnit.ConsoleRunner --version 3.12.0
-        
-      #- name: Install Nunit console 
-       # run: dotnet tool install --global NUnit.ConsoleRunner.NetCore --version 3.12.0-beta2
-      
-      - name: add package NUnit
-        run: dotnet add unit-testing-using-nunit.csproj package NUnit
-        
-      - name: add test logger package 
-        run: dotnet add unit-testing-using-nunit.csproj package NunitXml.TestLogger --version 3.0.107
-      
-      - name: add package NUnit
-        run: dotnet add unit-testing-using-nunit.csproj package TeamCity.dotcover
-      
-      - name: Nunit Test
-        run: dotnet test unit-testing-using-nunit.sln --logger:"trx;LogFileName=testresult.xml"
-        
-      - name: Upload a Build Artifact
-        uses: actions/upload-artifact@v2.2.4
-        with:
-          # Artifact name
-         name: artifact 
-         path: D:\a\MS-and-Nunit\MS-and-Nunit\PrimeService.Tests\TestResults\testresult.xml
-         
-         
-      - name: dotnet cover  
-        uses: dodopizza/dotcover-action@v1
-        with:
-         #dotCoverCommand: help cover coverage.xml
-          dotCoverCommand: dotnet --output=AppCoverageReport.html --reportType=HTML -- test "./unit-testing-using-nunit.csproj"
-      
-        
-      - name: 'Publish code coverage results'
-        uses: actions/upload-artifact@v2.2.3
-        with:
-          name: CoverageReport
-          path: D:\a\MS-and-Nunit\MS-and-Nunit\PrimeService.Tests\TestResults 
 
-      
+    
+    - name: dotnet cover  
+      uses: dodopizza/dotcover-action@v1
+      with:
+         #dotCoverCommand: help cover coverage.xml
+        dotCoverCommand: dotnet --output=./CodeCoverageReport.xml --reportType=XML -- test "./unit-testing-using-nunit.csproj"
+
+    - name: 'Publish code coverage results'
+      uses: actions/upload-artifact@v2.2.3
+      with:
+          name: CoverageReport
+          path: ./CodeCoverageReport.xml 
+
+
+    - name: Sonarscanner for dotnet
+      uses: Secbyte/dotnet-sonarscanner@v2.3
+      with:
+        buildCommand: dotnet build .
+        testCommand: dotnet test .
+        projectKey: .NetProject
+        projectName: .NetProject
+        beginArguments: >
+            /d:sonar.verbose="true"
+            /d:sonar.cs.dotcover.reportsPaths='"./CodeCoverageReport.xml"'
+            /d:sonar.coverage.exclusions='"**/*.cs","**/*.md"'
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
