@@ -53,47 +53,16 @@ jobs:
         name: artifact 
         path: $GITHUB_WORKSPACE
 
-    - name: NUnit
-      run: dotnet new nunit
-      
-    - name: add package Microsoft.NET.Test.Sdk
-      run: dotnet add unit-testing-using-nunit.csproj package Microsoft.NET.Test.Sdk --version 16.10.0 
-      
-    - name: add package Nunit3TestAdapter
-      run: dotnet add unit-testing-using-nunit.csproj package Nunit3TestAdapter
-      
-    - name: add package NUnit
-      run: dotnet add unit-testing-using-nunit.csproj package NUnit
-        
-    - name: add test logger package 
-      run: dotnet add unit-testing-using-nunit.csproj package NunitXml.TestLogger --version 3.0.107
-      
-    - name: add package NUnit
-      run: dotnet add unit-testing-using-nunit.csproj package TeamCity.dotcover
-      
-    - name: Nunit Test
-      run: dotnet test unit-testing-using-nunit.sln --logger:"trx;LogFileName=testresult.xml"
-        
-    - name: Upload a Test Artifact
-      uses: actions/upload-artifact@v2.2.4
-      with:
-        # Artifact name
-        name: artifact 
-        path: D:\a\MS-and-Nunit\MS-and-Nunit\PrimeService.Tests\TestResults\testresult.xml
- 
- 
-
-
   Sonar-Analysis:
     name: Sonar Analysis
     runs-on: ubuntu-latest
     steps:
    
     - uses: actions/checkout@v2  
-#     - name: Set up JDK 11
-#       uses: actions/setup-java@v1
-#       with:
-#         java-version: 1.11
+    - name: Set up JDK 11
+      uses: actions/setup-java@v1
+      with:
+        java-version: 1.11
 
     - name: Setup .NET Core SDK ${{ env.VERSION }}
       uses: actions/setup-dotnet@v1.7.2
@@ -130,6 +99,34 @@ jobs:
       run: |
         ./.sonar/scanner/dotnet-sonarscanner begin /k:".NetProject" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="${{ secrets.SONAR_HOST_URL }}" /d:sonar.cs.dotcover.reportsPaths="./CodeCoverageReport.html"
         dotnet build      
+
+    - name: NUnit
+      run: dotnet new nunit
+      
+    - name: add package Microsoft.NET.Test.Sdk
+      run: dotnet add unit-testing-using-nunit.csproj package Microsoft.NET.Test.Sdk --version 16.10.0 
+      
+    - name: add package Nunit3TestAdapter
+      run: dotnet add unit-testing-using-nunit.csproj package Nunit3TestAdapter
+      
+    - name: add package NUnit
+      run: dotnet add unit-testing-using-nunit.csproj package NUnit
+        
+    - name: add test logger package 
+      run: dotnet add unit-testing-using-nunit.csproj package NunitXml.TestLogger --version 3.0.107
+      
+    - name: add package NUnit
+      run: dotnet add unit-testing-using-nunit.csproj package TeamCity.dotcover
+      
+    - name: Nunit Test
+      run: dotnet test unit-testing-using-nunit.sln --logger:"trx;LogFileName=testresult.xml"
+
+    - name: Upload a Test Artifact
+      uses: actions/upload-artifact@v2.2.4
+      with:
+        # Artifact name
+        name: artifact 
+        path: D:\a\MS-and-Nunit\MS-and-Nunit\PrimeService.Tests\TestResults\testresult.xml  
 
     - name: dotnet cover  
       uses: dodopizza/dotcover-action@v1
