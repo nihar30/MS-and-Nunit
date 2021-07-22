@@ -44,13 +44,13 @@ jobs:
 
     - name: Sonar Install
       run:  |
-      dotnet tool install --global dotnet-sonarscanner
+        dotnet tool install --global dotnet-sonarscanner
 
     - name: Sonar Start
       run: |
-      dotnet sonarscanner begin /k:".NetProject" /d:sonar.host.url="${{ secrets.SONAR_HOST_URL }}" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.cs.dotcover.reportsPaths="dotcover.xml" 
-      dotnet restore
-      dotnet build ./unit-testing-using-nunit.sln
+        dotnet sonarscanner begin /k:".NetProject" /d:sonar.host.url="${{ secrets.SONAR_HOST_URL }}" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.cs.dotcover.reportsPaths="dotcover.xml" 
+        dotnet restore
+        dotnet build ./unit-testing-using-nunit.sln
 
     - name: NUnit
       run: dotnet new nunit
@@ -98,7 +98,7 @@ jobs:
 
     - name: End Analysis
       run: |
-      dotnet sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
+        dotnet sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
     # - name: End Analyze
     #   env:
     #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
