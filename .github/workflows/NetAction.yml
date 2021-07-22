@@ -69,20 +69,20 @@ jobs:
       with:
         dotnet-version: ${{ env.VERSION }}
 
-    - name: Cache SonarQube packages
-      uses: actions/cache@v1
-      with:
-        path: ~\sonar\cache
-        key: ${{ runner.os }}-sonar
-        restore-keys: ${{ runner.os }}-sonar
+#     - name: Cache SonarQube packages
+#       uses: actions/cache@v1
+#       with:
+#         path: ~\sonar\cache
+#         key: ${{ runner.os }}-sonar
+#         restore-keys: ${{ runner.os }}-sonar
         
-    - name: Cache SonarQube scanner
-      id: cache-sonar-scanner
-      uses: actions/cache@v1
-      with:
-        path: .\.sonar\scanner
-        key: ${{ runner.os }}-sonar-scanner
-        restore-keys: ${{ runner.os }}-sonar-scanner
+#     - name: Cache SonarQube scanner
+#       id: cache-sonar-scanner
+#       uses: actions/cache@v1
+#       with:
+#         path: .\.sonar\scanner
+#         key: ${{ runner.os }}-sonar-scanner
+#         restore-keys: ${{ runner.os }}-sonar-scanner
         
     - name: Install SonarQube scanner
       if: steps.cache-sonar-scanner.outputs.cache-hit != 'true'
@@ -96,7 +96,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
       shell: pwsh
       run: |
-        ./.sonar/scanner/dotnet-sonarscanner begin /k:".NetProject" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="${{ secrets.SONAR_HOST_URL }}" /d:sonar.cs.nunit.reportsPaths="./.sonar/scanner/testresult.xml" /d:sonar.cs.dotcover.reportsPaths="./.sonar/scanner/CodeCoverageReport.html"  
+        ./.sonar/scanner/dotnet-sonarscanner begin /k:".NetProject" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="${{ secrets.SONAR_HOST_URL }}" /d:sonar.cs.nunit.reportsPaths="/home/runner/work/MS-and-Nunit/MS-and-Nunit/PrimeService.Tests/TestResults/testresult.xml" /d:sonar.cs.dotcover.reportsPaths="./CodeCoverageReport.html"  
         dotnet build
         
 
@@ -119,26 +119,26 @@ jobs:
       run: dotnet add unit-testing-using-nunit.csproj package TeamCity.dotcover
       
     - name: Nunit Test
-      run: dotnet test unit-testing-using-nunit.sln --logger:"trx;LogFileName=./.sonar/scanner/testresult.xml"
+      run: dotnet test unit-testing-using-nunit.sln --logger:"trx;LogFileName=testresult.xml"
 
     - name: Upload a Test Artifact
       uses: actions/upload-artifact@v2.2.4
       with:
         # Artifact name
         name: artifact 
-        path: ./.sonar/scanner/testresult.xml
+        path: ./home/runner/work/MS-and-Nunit/MS-and-Nunit/PrimeService.Tests/TestResults/testresult.xml
         
     - name: dotnet cover  
       uses: dodopizza/dotcover-action@v1
       with:
          #dotCoverCommand: help cover coverage.xml
-        dotCoverCommand: dotnet --output=./.sonar/scanner/CodeCoverageReport.html --reportType=HTML -- test "./unit-testing-using-nunit.csproj"
+        dotCoverCommand: dotnet --output=./CodeCoverageReport.html --reportType=HTML -- test "./unit-testing-using-nunit.csproj"
 
     - name: 'Publish code coverage results'
       uses: actions/upload-artifact@v2.2.3
       with:
           name: CoverageReport
-          path: ./.sonar/scanner/CodeCoverageReport.html 
+          path: ./CodeCoverageReport.html 
 
 
     - name: End Analyze
