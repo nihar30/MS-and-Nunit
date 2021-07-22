@@ -96,7 +96,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
       shell: pwsh
       run: |
-        ./.sonar/scanner/dotnet-sonarscanner begin /k:".NetProject" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="${{ secrets.SONAR_HOST_URL }}" /d:sonar.cs.nunit.reportsPaths="testresult.xml" /d:sonar.verbose=true
+        ./.sonar/scanner/dotnet-sonarscanner begin /k:".NetProject" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="${{ secrets.SONAR_HOST_URL }}" /d:sonar.cs.nunit.reportsPaths="/home/runner/work/MS-and-Nunit/MS-and-Nunit/PrimeService.Tests/TestResults/testresult.xml" /d:sonar.verbose=true
         dotnet build
         
 
@@ -119,16 +119,14 @@ jobs:
       run: dotnet add unit-testing-using-nunit.csproj package TeamCity.dotcover
       
     - name: Nunit Test
-      run: | 
-        dotnet test unit-testing-using-nunit.sln --logger:"trx;LogFileName=testresult.xml"
-        mv /home/runner/work/MS-and-Nunit/MS-and-Nunit/PrimeService.Tests/TestResults/testresult.xml testresult.xml
+      run:  dotnet test unit-testing-using-nunit.sln --logger:"trx;LogFileName=testresult.xml"
 
     - name: Upload a Test Artifact
       uses: actions/upload-artifact@v2.2.4
       with:
         # Artifact name
         name: artifact 
-        path: testresult.xml
+        path: /home/runner/work/MS-and-Nunit/MS-and-Nunit/PrimeService.Tests/TestResults/testresult.xml
         
 #     - name: dotnet cover  
 #       uses: dodopizza/dotcover-action@v1
