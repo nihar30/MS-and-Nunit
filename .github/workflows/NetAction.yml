@@ -12,56 +12,12 @@ on:
     branches: [ master ]
 
 jobs:
-#   build:
-
-#     runs-on: windows-latest
-#     name: MS Build
-
-#     steps:
-#     - uses: actions/checkout@v2
-
-#     - name: Set up JDK 11
-#       uses: actions/setup-java@v1
-#       with:
-#         java-version: 1.11
-
-#     - name: Setup .NET Core SDK ${{ env.VERSION }}
-#       uses: actions/setup-dotnet@v1.7.2
-#       continue-on-error: ${{ env.CONTINUE_ON_ERROR_SETUP }}
-#       with:
-#         dotnet-version: ${{ env.VERSION }}
-        
-#     - name: Setup MSBuild
-#       uses: microsoft/setup-msbuild@v1
-#       continue-on-error: ${{ env.CONTINUE_ON_ERROR_SETUP }}
-      
-#     - name: Restore NuGet packages
-#       working-directory: ${{env.GITHUB_WORKSPACE}}
-#       run: nuget restore ${{env.SOLUTION_FILE_PATH}}
-
-#     - name: MS Build
-#       working-directory: ${{env.GITHUB_WORKSPACE}}
-#       # run: msbuild /m /p:Configuration=${{env.BUILD_CONFIGURATION}} ${{env.SOLUTION_FILE_PATH}}
-#       run: msbuild /m /t:Rebuild ${{env.SOLUTION_FILE_PATH}}
-#       continue-on-error: ${{ env.CONTINUE_ON_ERROR }}
-
-#     - name: Upload a Build Artifact
-#       uses: actions/upload-artifact@v2.2.4
-#       with:
-#           # Artifact name
-#         name: artifact 
-#         path: $GITHUB_WORKSPACE
-
   Sonar-Analysis:
     name: Sonar Analysis
     runs-on: ubuntu-latest
     steps:
    
     - uses: actions/checkout@v2  
-#     - name: Set up JDK 11
-#       uses: actions/setup-java@v1
-#       with:
-#         java-version: 1.11
 
     - name: Setup .NET Core SDK ${{ env.VERSION }}
       uses: actions/setup-dotnet@v1.7.2
@@ -69,36 +25,33 @@ jobs:
       with:
         dotnet-version: ${{ env.VERSION }}
 
-#     - name: Cache SonarQube packages
-#       uses: actions/cache@v1
-#       with:
-#         path: ~\sonar\cache
-#         key: ${{ runner.os }}-sonar
-#         restore-keys: ${{ runner.os }}-sonar
         
-#     - name: Cache SonarQube scanner
-#       id: cache-sonar-scanner
-#       uses: actions/cache@v1
-#       with:
-#         path: .\.sonar\scanner
-#         key: ${{ runner.os }}-sonar-scanner
-#         restore-keys: ${{ runner.os }}-sonar-scanner
+    # - name: Install SonarQube scanner
+    #   if: steps.cache-sonar-scanner.outputs.cache-hit != 'true'
+    #   shell: pwsh
+    #   run: |
+    #     New-Item -Path ./.sonar/scanner -ItemType Directory
+    #     dotnet tool update dotnet-sonarscanner --tool-path ./.sonar/scanner
         
-    - name: Install SonarQube scanner
-      if: steps.cache-sonar-scanner.outputs.cache-hit != 'true'
-      shell: pwsh
+    # - name: Start analyze
+    #   env:
+    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
+    #   shell: pwsh
+    #   run: |
+    #     ./.sonar/scanner/dotnet-sonarscanner begin /k:".NetProject" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="${{ secrets.SONAR_HOST_URL }}" /d:sonar.coverageReportPaths="./CodeCoverageReport.xml"  
+    #     dotnet restore
+    #     dotnet build
+
+    - name: Sonar Install
+      run:  |
+      dotnet tool install --global dotnet-sonarscanner
+
+    - name: Sonar Start
       run: |
-        New-Item -Path ./.sonar/scanner -ItemType Directory
-        dotnet tool update dotnet-sonarscanner --tool-path ./.sonar/scanner
-        
-    - name: Start analyze
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
-      shell: pwsh
-      run: |
-        ./.sonar/scanner/dotnet-sonarscanner begin /k:".NetProject" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="${{ secrets.SONAR_HOST_URL }}" /d:sonar.coverageReportPaths="./CodeCoverageReport.xml"  
-        dotnet build
-        
+      dotnet sonarscanner begin /k:".NetProject" /d:sonar.host.url="${{ secrets.SONAR_HOST_URL }}" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.cs.dotcover.reportsPaths="dotcover.xml" 
+      dotnet restore
+      dotnet build ./unit-testing-using-nunit.sln
+
     - name: NUnit
       run: dotnet new nunit
       
@@ -118,21 +71,21 @@ jobs:
       run: dotnet add unit-testing-using-nunit.csproj package TeamCity.dotcover
       
     - name: Nunit Test
-    #  run: dotnet test unit-testing-using-nunit.sln --logger:"trx;LogFileName=testresult.xml"
-      run: dotnet test unit-testing-using-nunit.sln --logger trx
+      run: dotnet test /p:CollectCoverage=true unit-testing-using-nunit.sln --logger:"trx;LogFileName=testresult.xml"
+    #  run: dotnet test /p:CollectCoverage=true unit-testing-using-nunit.sln --logger trx
       
     - name: Upload a Test Artifact
       uses: actions/upload-artifact@v2.2.4
       with:
         # Artifact name
         name: artifact 
-        path: ./home/runner/work/MS-and-Nunit/MS-and-Nunit/PrimeService.Tests/TestResults/_fv-az*.trx
+        path: D:\a\MS-and-Nunit\MS-and-Nunit\PrimeService.Tests\TestResults\testresult.xml
         
     - name: dotnet cover  
       uses: dodopizza/dotcover-action@v1
       with:
          #dotCoverCommand: help cover coverage.xml
-        dotCoverCommand: dotnet --output=./CodeCoverageReport.xml --reportType=XML -- test "./unit-testing-using-nunit.csproj"
+        dotCoverCommand: dotnet --output=./CodeCoverageReport.xml --reportType=XML -- test /p:CollectCoverage=true "./unit-testing-using-nunit.csproj" 
 
     - name: 'Publish code coverage results'
       uses: actions/upload-artifact@v2.2.3
@@ -142,18 +95,22 @@ jobs:
     - name: display files
       run: ls -R
 
-    - name: End Analyze
-      env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
-      shell: pwsh
-      run: |
-          ./.sonar/scanner/dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
 
-    - name: SonarQube Quality Gate check
-      uses: sonarsource/sonarqube-quality-gate-action@master
-        # Force to fail step after specific time
-      timeout-minutes: 5
-      env:
-         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      with:
-          scanMetadataReportFile: .sonarqube/out/.sonar/report-task.txt  
+    - name: End Analysis
+      run: |
+      dotnet sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
+    # - name: End Analyze
+    #   env:
+    #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
+    #   shell: pwsh
+    #   run: |
+    #       ./.sonar/scanner/dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
+
+    # - name: SonarQube Quality Gate check
+    #   uses: sonarsource/sonarqube-quality-gate-action@master
+    #     # Force to fail step after specific time
+    #   timeout-minutes: 5
+    #   env:
+    #      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+    #   with:
+    #       scanMetadataReportFile: .sonarqube/out/.sonar/report-task.txt  
