@@ -71,8 +71,8 @@ jobs:
       run: dotnet add unit-testing-using-nunit.csproj package TeamCity.dotcover
       
     - name: Nunit Test
-      run: dotnet test unit-testing-using-nunit.sln --logger:"LogFileName=testresult.xml" --CollectCoverage:"true"
-    #  run: dotnet test /p:CollectCoverage=true unit-testing-using-nunit.sln --logger trx
+      run: dotnet test unit-testing-using-nunit.sln --logger:"LogFileName=testresult.xml" 
+      #run: dotnet test /p:CollectCoverage=true unit-testing-using-nunit.sln --logger trx
       
     - name: Upload a Test Artifact
       uses: actions/upload-artifact@v2.2.4
