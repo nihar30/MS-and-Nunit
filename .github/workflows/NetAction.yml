@@ -69,20 +69,20 @@ jobs:
       with:
         dotnet-version: ${{ env.VERSION }}
 
-    - name: Cache SonarQube packages
-      uses: actions/cache@v1
-      with:
-        path: ~\sonar\cache
-        key: ${{ runner.os }}-sonar
-        restore-keys: ${{ runner.os }}-sonar
+#     - name: Cache SonarQube packages
+#       uses: actions/cache@v1
+#       with:
+#         path: ~\sonar\cache
+#         key: ${{ runner.os }}-sonar
+#         restore-keys: ${{ runner.os }}-sonar
         
-    - name: Cache SonarQube scanner
-      id: cache-sonar-scanner
-      uses: actions/cache@v1
-      with:
-        path: .\.sonar\scanner
-        key: ${{ runner.os }}-sonar-scanner
-        restore-keys: ${{ runner.os }}-sonar-scanner
+#     - name: Cache SonarQube scanner
+#       id: cache-sonar-scanner
+#       uses: actions/cache@v1
+#       with:
+#         path: .\.sonar\scanner
+#         key: ${{ runner.os }}-sonar-scanner
+#         restore-keys: ${{ runner.os }}-sonar-scanner
         
     - name: Install SonarQube scanner
       if: steps.cache-sonar-scanner.outputs.cache-hit != 'true'
@@ -96,7 +96,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
       shell: pwsh
       run: |
-        ./.sonar/scanner/dotnet-sonarscanner begin /k:".NetProject" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="${{ secrets.SONAR_HOST_URL }}" /d:sonar.cs.nunit.reportsPaths="./home/runner/work/MS-and-Nunit/MS-and-Nunit/PrimeService.Tests/TestResults/testresult.xml"  
+        ./.sonar/scanner/dotnet-sonarscanner begin /k:".NetProject" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="${{ secrets.SONAR_HOST_URL }}" /d:sonar.cs.nunit.reportsPaths="/home/runner/work/MS-and-Nunit/MS-and-Nunit/PrimeService.Tests/TestResults/testresult.xml"  
         dotnet build
         
 
