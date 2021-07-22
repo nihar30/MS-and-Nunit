@@ -132,7 +132,7 @@ jobs:
       uses: dodopizza/dotcover-action@v1
       with:
          #dotCoverCommand: help cover coverage.xml
-        dotCoverCommand: dotcover dotnet --output=./CodeCoverageReport.html --reportType=HTML -- test "./unit-testing-using-nunit.csproj"
+        dotCoverCommand: dotnet --output=./CodeCoverageReport.html --reportType=HTML -- test "./unit-testing-using-nunit.csproj"
 
     - name: 'Publish code coverage results'
       uses: actions/upload-artifact@v2.2.3
