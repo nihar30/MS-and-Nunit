@@ -96,7 +96,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
       shell: pwsh
       run: |
-        ./.sonar/scanner/dotnet-sonarscanner begin /k:".NetProject" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="${{ secrets.SONAR_HOST_URL }}" /d:sonar.cs.nunit.reportsPaths="/home/runner/work/MS-and-Nunit/MS-and-Nunit/PrimeService.Tests/TestResults/testresult.xml" /d:sonar.cs.dotcover.reportsPaths="./CodeCoverageReport.html" 
+        ./.sonar/scanner/dotnet-sonarscanner begin /k:".NetProject" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="${{ secrets.SONAR_HOST_URL }}" /d:sonar.cs.nunit.reportsPaths="testresult.xml"  
         dotnet build
         
 
@@ -119,26 +119,28 @@ jobs:
       run: dotnet add unit-testing-using-nunit.csproj package TeamCity.dotcover
       
     - name: Nunit Test
-      run: dotnet test unit-testing-using-nunit.sln --logger:"trx;LogFileName=testresult.xml"
+      run: | 
+        dotnet test unit-testing-using-nunit.sln --logger:"trx;LogFileName=testresult.xml"
+        mv /home/runner/work/MS-and-Nunit/MS-and-Nunit/PrimeService.Tests/TestResults/testresult.xml testresult.xml
 
     - name: Upload a Test Artifact
       uses: actions/upload-artifact@v2.2.4
       with:
         # Artifact name
         name: artifact 
-        path: /home/runner/work/MS-and-Nunit/MS-and-Nunit/PrimeService.Tests/TestResults/testresult.xml
+        path: testresult.xml
         
-    - name: dotnet cover  
-      uses: dodopizza/dotcover-action@v1
-      with:
-         #dotCoverCommand: help cover coverage.xml
-        dotCoverCommand: dotnet --output=./CodeCoverageReport.html --reportType=HTML -- test "./unit-testing-using-nunit.csproj"
+#     - name: dotnet cover  
+#       uses: dodopizza/dotcover-action@v1
+#       with:
+#          #dotCoverCommand: help cover coverage.xml
+#         dotCoverCommand: dotnet --output=./CodeCoverageReport.html --reportType=HTML -- test "./unit-testing-using-nunit.csproj"
 
-    - name: 'Publish code coverage results'
-      uses: actions/upload-artifact@v2.2.3
-      with:
-          name: CoverageReport
-          path: ./CodeCoverageReport.html 
+#     - name: 'Publish code coverage results'
+#       uses: actions/upload-artifact@v2.2.3
+#       with:
+#           name: CoverageReport
+#           path: ./CodeCoverageReport.html 
 
 
     - name: End Analyze
