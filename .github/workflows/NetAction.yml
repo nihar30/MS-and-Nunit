@@ -58,10 +58,10 @@ jobs:
     steps:
    
     - uses: actions/checkout@v2  
-    - name: Set up JDK 11
-      uses: actions/setup-java@v1
-      with:
-        java-version: 1.11
+#     - name: Set up JDK 11
+#       uses: actions/setup-java@v1
+#       with:
+#         java-version: 1.11
 
     - name: Setup .NET Core SDK ${{ env.VERSION }}
       uses: actions/setup-dotnet@v1.7.2
@@ -96,7 +96,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
       shell: pwsh
       run: |
-        ./.sonar/scanner/dotnet-sonarscanner begin /k:".NetProject" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="${{ secrets.SONAR_HOST_URL }}" /d:sonar.cs.nunit.reportsPaths="./home/runner/work/MS-and-Nunit/MS-and-Nunit/PrimeService.Tests/TestResults/testresult.xml"  
+        ./.sonar/scanner/dotnet-sonarscanner begin /k:".NetProject" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="${{ secrets.SONAR_HOST_URL }}" /d:sonar.cs.nunit.reportsPaths="./.sonar/scanner/testresult.xml" /d:sonar.cs.dotcover.reportsPaths="./.sonar/scanner/CodeCoverageReport.html"  
         dotnet build
         
 
@@ -119,26 +119,26 @@ jobs:
       run: dotnet add unit-testing-using-nunit.csproj package TeamCity.dotcover
       
     - name: Nunit Test
-      run: dotnet test unit-testing-using-nunit.sln --logger:"trx;LogFileName=testresult.xml"
+      run: dotnet test unit-testing-using-nunit.sln --logger:"trx;LogFileName=./.sonar/scanner/testresult.xml"
 
     - name: Upload a Test Artifact
       uses: actions/upload-artifact@v2.2.4
       with:
         # Artifact name
         name: artifact 
-        path: /home/runner/work/MS-and-Nunit/MS-and-Nunit/PrimeService.Tests/TestResults/testresult.xml
+        path: ./.sonar/scanner/testresult.xml
         
-#     - name: dotnet cover  
-#       uses: dodopizza/dotcover-action@v1
-#       with:
-#          #dotCoverCommand: help cover coverage.xml
-#         dotCoverCommand: dotnet --output=./CodeCoverageReport.html --reportType=HTML -- test "./unit-testing-using-nunit.csproj"
+    - name: dotnet cover  
+      uses: dodopizza/dotcover-action@v1
+      with:
+         #dotCoverCommand: help cover coverage.xml
+        dotCoverCommand: dotnet --output=./.sonar/scanner/CodeCoverageReport.html --reportType=HTML -- test "./unit-testing-using-nunit.csproj"
 
-#     - name: 'Publish code coverage results'
-#       uses: actions/upload-artifact@v2.2.3
-#       with:
-#           name: CoverageReport
-#           path: ./CodeCoverageReport.html 
+    - name: 'Publish code coverage results'
+      uses: actions/upload-artifact@v2.2.3
+      with:
+          name: CoverageReport
+          path: ./.sonar/scanner/CodeCoverageReport.html 
 
 
     - name: End Analyze
