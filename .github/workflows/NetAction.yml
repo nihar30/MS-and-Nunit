@@ -121,7 +121,7 @@ jobs:
     
     - name: Build
       run: |
-        dotnet restore
+        dotnet restore unit-testing-using-nunit.sln
         dotnet build unit-testing-using-nunit.sln
       
     - name: Nunit Test
