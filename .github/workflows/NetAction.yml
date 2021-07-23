@@ -122,7 +122,7 @@ jobs:
     - name: Build
       run: |
         dotnet restore
-        dotnet build
+        dotnet build unit-testing-using-nunit.sln
       
     - name: Nunit Test
       run:  dotnet test unit-testing-using-nunit.sln --logger:"trx;LogFileName=testresult.xml"
