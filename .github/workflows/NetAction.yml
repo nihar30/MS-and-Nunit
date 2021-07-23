@@ -119,10 +119,10 @@ jobs:
     - name: add package NUnit
       run: dotnet add unit-testing-using-nunit.csproj package TeamCity.dotcover
     
-    - name: Build
-      run: |
-        dotnet restore unit-testing-using-nunit.sln
-        dotnet build unit-testing-using-nunit.sln
+#     - name: Build
+#       run: |
+#         dotnet restore unit-testing-using-nunit.sln
+#         dotnet build unit-testing-using-nunit.sln
       
     - name: Nunit Test
       run:  dotnet test unit-testing-using-nunit.sln --logger:"trx;LogFileName=testresult.xml"
