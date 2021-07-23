@@ -1,0 +1,57 @@
+name: .NETCI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '3.1'
+         
+#     - name: Restore dependencies
+#       run: dotnet restore
+#     - name: Build
+#       run: dotnet build --no-restore
+#     - name: Test
+#       run: dotnet test --no-build --verbosity normal
+
+# Install sonarqube scanner / reporter
+    - name: Sonar Install
+      run: dotnet tool install --global dotnet-sonarscanner
+      
+# Install dotnet tools to generate test report
+    - name: Dotnet tools coverlet console install
+      run: dotnet tool install --global coverlet.console
+    - name: Coverlet add msbuild package      
+      run: dotnet add package coverlet.msbuild
+
+# Start sonarqube process
+    - name: Sonar Analysis Begin
+      run: dotnet sonarscanner begin /k:".NetProject" /d:sonar.host.url="${{ secrets.SONAR_HOST_URL }}" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.cs.opencover.reportsPaths="opencover.xml" 
+#/k: /d:sonar.login=" /d:sonar.host.url= /d:sonar.cs.nunit.reportsPaths="/home/runner/work/MS-and-Nunit/MS-and-Nunit/PrimeService.Tests/TestResults/testresult.xml" /d:sonar.cs.dotcover.reportsPaths="./CodeCoverageReport.html" 
+#        dotnet build
+# Build solution
+    - name: Dotnet build
+      run: |
+          dotnet restore
+          dotnet build ./unit-testing-using-nunit.sln
+# Running unit tests - 'opencover ' output format    
+    - name: Dotnet Test
+      run: |
+         dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=opencover  /p:CoverletOutput=coverage /p:Exclude=[xunit.*]* ./unit-testing-using-nunit.sln
+         mv ./*/coverage.opencover.xml opencover.xml 
+
+# Send test report result to codeclimate
+    - name: Sonar End Analysis
+      run: dotnet sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
+      
