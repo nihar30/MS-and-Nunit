@@ -96,7 +96,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
       shell: pwsh
       run: |
-        ./.sonar/scanner/dotnet-sonarscanner begin /k:".NetProject" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="${{ secrets.SONAR_HOST_URL }}" /d:sonar.coverage.jacoco.xmlReportPaths="target/site/jacoco/jacoco.xml" /d:sonar.cs.dotcover.reportsPaths="./CodeCoverageReport.xml" /d:sonar.verbose=true
+        ./.sonar/scanner/dotnet-sonarscanner begin /k:".NetProject" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="${{ secrets.SONAR_HOST_URL }}" /d:sonar.coverage.jacoco.xmlReportPaths="./CodeCoverageReport.xml" /d:sonar.cs.nunit.reportsPaths="/home/runner/work/MS-and-Nunit/MS-and-Nunit/PrimeService.Tests/TestResults/testresult.xml" /d:sonar.cs.dotcover.reportsPaths="./CodeCoverageReport"
         
         dotnet build
         
@@ -127,7 +127,7 @@ jobs:
     - name: Nunit Test
       run: |
         dotnet test unit-testing-using-nunit.sln --logger:"trx;LogFileName=testresult.xml"
-        mv /home/runner/work/MS-and-Nunit/MS-and-Nunit/PrimeService.Tests/TestResults/testresult.xml target/site/jacoco/jacoco.xml 
+ #       mv /home/runner/work/MS-and-Nunit/MS-and-Nunit/PrimeService.Tests/TestResults/testresult.xml target/site/jacoco/jacoco.xml 
 
     - name: Upload a Test Artifact NUnit
       uses: actions/upload-artifact@v2.2.4
@@ -136,13 +136,6 @@ jobs:
         name: artifact 
         path: /home/runner/work/MS-and-Nunit/MS-and-Nunit/PrimeService.Tests/TestResults/testresult.xml
         
-    - name: Upload a Test Artifact
-      uses: actions/upload-artifact@v2.2.4
-      with:
-        # Artifact name
-        name: artifact 
-        path: target/site/jacoco/jacoco.xml 
-
     - name: dotnet cover  
       uses: dodopizza/dotcover-action@v1
       with:
